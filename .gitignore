@@ -1,17 +1,24 @@
-/vendor/
-/var/
+# PHPUnit
+var/
+vendor/
+.idea/
+.phpunit.cache/
 /.idea/
 /.vscode/
-/composer.lock
-.DS_Store
-*.log
-*.tmp
-*.cache
 /tests/_output/
 /tests/build/
 /tests/coverage/
-*.report
-
-# PHPUnit
+/var/
+/vendor/
+composer.lock
+.php-cs-fixer.cache
+.phpunit.result.cache
+phpunit.xml
+.DS_Store
 /.phpunit.result.cache
+/composer.lock
 /coverage.xml
+*.cache
+*.log
+*.report
+*.tmp
