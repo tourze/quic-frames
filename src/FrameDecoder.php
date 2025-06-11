@@ -97,7 +97,7 @@ final class FrameDecoder
                 [$frame, $consumed] = $this->decodeFrame($data, $offset);
                 $frames[] = $frame;
                 $offset += $consumed;
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 throw new \InvalidArgumentException(
                     "在偏移量 {$offset} 处解码帧失败: {$e->getMessage()}",
                     0,
