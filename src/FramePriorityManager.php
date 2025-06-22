@@ -66,7 +66,7 @@ final class FramePriorityManager
 
     /**
      * 批量添加帧
-     * 
+     *
      * @param Frame[] $frames
      */
     public function addFrames(array $frames): void
@@ -78,7 +78,7 @@ final class FramePriorityManager
 
     /**
      * 获取下一批要发送的帧
-     * 
+     *
      * @param int $maxCount 最大帧数量
      * @param int $maxSize 最大总大小（字节）
      * @return Frame[] 要发送的帧数组
@@ -225,7 +225,7 @@ final class FramePriorityManager
 
     /**
      * 从指定队列中移除特定类型的帧
-     * 
+     *
      * @param Frame[] $queue
      * @param FrameType $frameType
      * @return int 移除的帧数量

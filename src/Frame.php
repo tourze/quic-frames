@@ -26,7 +26,7 @@ abstract class Frame
 
     /**
      * 从二进制数据解码帧
-     * 
+     *
      * @param string $data 二进制数据
      * @param int $offset 解码起始偏移量
      * @return array{0: Frame, 1: int} [解码的帧对象, 消耗的字节数]
@@ -40,7 +40,7 @@ abstract class Frame
 
     /**
      * 获取帧的优先级（用于传输调度）
-     * 
+     *
      * @return int 优先级数值，数值越小优先级越高
      */
     public function getPriority(): int

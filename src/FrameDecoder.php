@@ -36,7 +36,7 @@ final class FrameDecoder
 
     /**
      * 解码单个帧
-     * 
+     *
      * @param string $data 二进制数据
      * @param int $offset 解码起始偏移量
      * @return array{0: Frame, 1: int} [解码的帧对象, 消耗的字节数]
@@ -69,7 +69,7 @@ final class FrameDecoder
 
     /**
      * 解码多个帧
-     * 
+     *
      * @param string $data 二进制数据
      * @return Frame[] 解码的帧数组
      */
@@ -111,7 +111,7 @@ final class FrameDecoder
 
     /**
      * 检查数据中是否有完整的帧
-     * 
+     *
      * @param string $data 二进制数据
      * @param int $offset 检查起始偏移量
      * @return bool 是否有完整的帧
@@ -128,7 +128,7 @@ final class FrameDecoder
 
     /**
      * 获取下一个帧的类型（不解码整个帧）
-     * 
+     *
      * @param string $data 二进制数据
      * @param int $offset 偏移量
      * @return FrameType 帧类型
@@ -150,7 +150,7 @@ final class FrameDecoder
 
     /**
      * 验证所有解码的帧
-     * 
+     *
      * @param Frame[] $frames 要验证的帧数组
      * @return bool 所有帧是否有效
      */
@@ -171,7 +171,7 @@ final class FrameDecoder
 
     /**
      * 按类型过滤帧
-     * 
+     *
      * @param Frame[] $frames 帧数组
      * @param FrameType $frameType 要过滤的帧类型
      * @return Frame[] 过滤后的帧数组
@@ -185,7 +185,7 @@ final class FrameDecoder
 
     /**
      * 获取支持的帧类型列表
-     * 
+     *
      * @return FrameType[] 支持的帧类型数组
      */
     public function getSupportedFrameTypes(): array

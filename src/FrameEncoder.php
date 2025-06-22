@@ -21,7 +21,7 @@ final class FrameEncoder
 
     /**
      * 编码多个帧
-     * 
+     *
      * @param Frame[] $frames 要编码的帧数组
      * @return string 编码后的二进制数据
      */
@@ -42,7 +42,7 @@ final class FrameEncoder
 
     /**
      * 按优先级排序帧后编码
-     * 
+     *
      * @param Frame[] $frames 要编码的帧数组
      * @return string 编码后的二进制数据
      */
@@ -68,7 +68,7 @@ final class FrameEncoder
 
     /**
      * 编码帧并填充到指定大小
-     * 
+     *
      * @param Frame[] $frames 要编码的帧数组
      * @param int $targetSize 目标数据包大小
      * @return string 编码后的二进制数据
@@ -106,7 +106,7 @@ final class FrameEncoder
 
     /**
      * 计算多个帧编码后的总大小
-     * 
+     *
      * @param Frame[] $frames
      */
     public function getTotalEncodedSize(array $frames): int
@@ -126,7 +126,7 @@ final class FrameEncoder
 
     /**
      * 检查帧是否可以放入指定大小的数据包
-     * 
+     *
      * @param Frame[] $frames
      * @param int $maxSize
      */
