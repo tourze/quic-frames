@@ -6,10 +6,11 @@ namespace Tourze\QUIC\Frames;
 
 use Tourze\QUIC\Core\Enum\FrameType;
 use Tourze\QUIC\Core\VariableInteger;
+use Tourze\QUIC\Frames\Exception\InvalidFrameException;
 
 /**
  * CONNECTION_CLOSE帧
- * 
+ *
  * 用于通知对端连接即将关闭
  * 参考：https://tools.ietf.org/html/rfc9000#section-19.19
  */
@@ -21,11 +22,11 @@ final class ConnectionCloseFrame extends Frame
         private readonly string $reasonPhrase = ''
     ) {
         if ($errorCode < 0) {
-            throw new \InvalidArgumentException('错误码不能为负数');
+            throw new InvalidFrameException('错误码不能为负数');
         }
         
         if ($frameType < 0) {
-            throw new \InvalidArgumentException('帧类型不能为负数');
+            throw new InvalidFrameException('帧类型不能为负数');
         }
     }
 
@@ -63,14 +64,14 @@ final class ConnectionCloseFrame extends Frame
     public static function decode(string $data, int $offset = 0): array
     {
         if ($offset >= strlen($data)) {
-            throw new \InvalidArgumentException('数据不足，无法解码CONNECTION_CLOSE帧');
+            throw new InvalidFrameException('数据不足，无法解码CONNECTION_CLOSE帧');
         }
 
         $position = $offset;
         $frameType = ord($data[$position++]);
         
         if ($frameType !== FrameType::CONNECTION_CLOSE->value) {
-            throw new \InvalidArgumentException('无效的CONNECTION_CLOSE帧类型');
+            throw new InvalidFrameException('无效的CONNECTION_CLOSE帧类型');
         }
 
         // 解码错误码
@@ -87,7 +88,7 @@ final class ConnectionCloseFrame extends Frame
 
         // 验证原因短语长度
         if ($position + $reasonLength > strlen($data)) {
-            throw new \InvalidArgumentException('数据不足，无法读取完整的原因短语');
+            throw new InvalidFrameException('数据不足，无法读取完整的原因短语');
         }
 
         // 读取原因短语

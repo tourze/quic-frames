@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tourze\QUIC\Frames;
 
 use Tourze\QUIC\Core\Enum\FrameType;
+use Tourze\QUIC\Frames\Exception\InvalidFrameException;
 
 /**
  * PING帧
- * 
+ *
  * 用于测试连接可达性和保持连接活跃
  * 参考：https://tools.ietf.org/html/rfc9000#section-19.2
  */
@@ -27,7 +28,7 @@ final class PingFrame extends Frame
     public static function decode(string $data, int $offset = 0): array
     {
         if ($offset >= strlen($data) || ord($data[$offset]) !== 0x01) {
-            throw new \InvalidArgumentException('无效的PING帧格式');
+            throw new InvalidFrameException('无效的PING帧格式');
         }
 
         return [new self(), 1];

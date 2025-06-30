@@ -9,6 +9,7 @@ use Tourze\QUIC\Frames\FrameEncoder;
 use Tourze\QUIC\Frames\PaddingFrame;
 use Tourze\QUIC\Frames\PingFrame;
 use Tourze\QUIC\Frames\StreamFrame;
+use Tourze\QUIC\Frames\Exception\InvalidFrameException;
 
 final class FrameEncoderTest extends TestCase
 {
@@ -42,9 +43,10 @@ final class FrameEncoderTest extends TestCase
 
     public function testEncodeFramesWithInvalidFrame(): void
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidFrameException::class);
         $this->expectExceptionMessage('只能编码Frame实例');
         
+        /** @phpstan-ignore-next-line 故意传入错误类型来测试类型检查 */
         $this->encoder->encodeFrames(['not a frame']);
     }
 

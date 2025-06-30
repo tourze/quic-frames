@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Tourze\QUIC\Frames;
 
+use Tourze\QUIC\Frames\Exception\InvalidFrameException;
+
 /**
  * 帧编码器
- * 
+ *
  * 负责将多个帧编码为二进制数据包
  */
 final class FrameEncoder
@@ -31,7 +33,7 @@ final class FrameEncoder
         
         foreach ($frames as $frame) {
             if (!$frame instanceof Frame) {
-                throw new \InvalidArgumentException('只能编码Frame实例');
+                throw new InvalidFrameException('只能编码Frame实例');
             }
             
             $result .= $this->encodeFrame($frame);
@@ -76,14 +78,14 @@ final class FrameEncoder
     public function encodeFramesWithPadding(array $frames, int $targetSize): string
     {
         if ($targetSize <= 0) {
-            throw new \InvalidArgumentException('目标大小必须大于0');
+            throw new InvalidFrameException('目标大小必须大于0');
         }
 
         $encoded = $this->encodeFramesByPriority($frames);
         $currentSize = strlen($encoded);
         
         if ($currentSize > $targetSize) {
-            throw new \InvalidArgumentException("编码数据大小({$currentSize})超过目标大小({$targetSize})");
+            throw new InvalidFrameException("编码数据大小({$currentSize})超过目标大小({$targetSize})");
         }
         
         // 如果需要填充
@@ -115,7 +117,7 @@ final class FrameEncoder
         
         foreach ($frames as $frame) {
             if (!$frame instanceof Frame) {
-                throw new \InvalidArgumentException('只能计算Frame实例的大小');
+                throw new InvalidFrameException('只能计算Frame实例的大小');
             }
             
             $totalSize += $this->getEncodedSize($frame);

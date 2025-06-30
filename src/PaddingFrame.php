@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tourze\QUIC\Frames;
 
 use Tourze\QUIC\Core\Enum\FrameType;
+use Tourze\QUIC\Frames\Exception\InvalidFrameException;
 
 /**
  * PADDING帧
- * 
+ *
  * 用于填充数据包，增加数据包大小以防止流量分析
  * 参考：https://tools.ietf.org/html/rfc9000#section-19.1
  */
@@ -18,7 +19,7 @@ final class PaddingFrame extends Frame
         private readonly int $length = 1
     ) {
         if ($length < 1) {
-            throw new \InvalidArgumentException('PADDING帧长度必须至少为1字节');
+            throw new InvalidFrameException('PADDING帧长度必须至少为1字节');
         }
     }
 
@@ -40,7 +41,7 @@ final class PaddingFrame extends Frame
     public static function decode(string $data, int $offset = 0): array
     {
         if ($offset >= strlen($data)) {
-            throw new \InvalidArgumentException('数据不足，无法解码PADDING帧');
+            throw new InvalidFrameException('数据不足，无法解码PADDING帧');
         }
 
         $length = 0;
@@ -53,7 +54,7 @@ final class PaddingFrame extends Frame
         }
 
         if ($length === 0) {
-            throw new \InvalidArgumentException('无效的PADDING帧格式');
+            throw new InvalidFrameException('无效的PADDING帧格式');
         }
 
         return [new self($length), $length];

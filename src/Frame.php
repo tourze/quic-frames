@@ -8,7 +8,7 @@ use Tourze\QUIC\Core\Enum\FrameType;
 
 /**
  * QUIC帧抽象基类
- * 
+ *
  * 定义所有QUIC帧的通用接口和基本实现
  * 参考：https://tools.ietf.org/html/rfc9000#section-12.4
  */

@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Tourze\QUIC\Frames;
 
 use Tourze\QUIC\Core\Enum\FrameType;
+use Tourze\QUIC\Frames\Exception\InvalidFrameException;
 
 /**
  * 帧解码器
- * 
+ *
  * 负责将二进制数据解码为帧对象
  */
 final class FrameDecoder
@@ -44,7 +45,7 @@ final class FrameDecoder
     public function decodeFrame(string $data, int $offset = 0): array
     {
         if ($offset >= strlen($data)) {
-            throw new \InvalidArgumentException('数据不足，无法解码帧');
+            throw new InvalidFrameException('数据不足，无法解码帧');
         }
 
         $frameTypeByte = ord($data[$offset]);
@@ -53,14 +54,14 @@ final class FrameDecoder
         try {
             $frameType = FrameType::from($frameTypeByte);
         } catch (\ValueError) {
-            throw new \InvalidArgumentException("未知的帧类型: 0x" . sprintf('%02X', $frameTypeByte));
+            throw new InvalidFrameException("未知的帧类型: 0x" . sprintf('%02X', $frameTypeByte));
         }
 
         // 获取对应的帧类
         $frameClass = self::FRAME_CLASS_MAP[$frameTypeByte] ?? null;
         
         if ($frameClass === null) {
-            throw new \InvalidArgumentException("不支持的帧类型: {$frameType->name}");
+            throw new InvalidFrameException("不支持的帧类型: {$frameType->name}");
         }
 
         // 调用具体帧类的解码方法
@@ -98,7 +99,7 @@ final class FrameDecoder
                 $frames[] = $frame;
                 $offset += $consumed;
             } catch (\Throwable $e) {
-                throw new \InvalidArgumentException(
+                throw new InvalidFrameException(
                     "在偏移量 {$offset} 处解码帧失败: {$e->getMessage()}",
                     0,
                     $e
@@ -136,7 +137,7 @@ final class FrameDecoder
     public function peekFrameType(string $data, int $offset = 0): FrameType
     {
         if ($offset >= strlen($data)) {
-            throw new \InvalidArgumentException('数据不足，无法获取帧类型');
+            throw new InvalidFrameException('数据不足，无法获取帧类型');
         }
 
         $frameTypeByte = ord($data[$offset]);
@@ -144,7 +145,7 @@ final class FrameDecoder
         try {
             return FrameType::from($frameTypeByte);
         } catch (\ValueError) {
-            throw new \InvalidArgumentException("未知的帧类型: 0x" . sprintf('%02X', $frameTypeByte));
+            throw new InvalidFrameException("未知的帧类型: 0x" . sprintf('%02X', $frameTypeByte));
         }
     }
 

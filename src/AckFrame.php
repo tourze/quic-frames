@@ -6,10 +6,11 @@ namespace Tourze\QUIC\Frames;
 
 use Tourze\QUIC\Core\Enum\FrameType;
 use Tourze\QUIC\Core\VariableInteger;
+use Tourze\QUIC\Frames\Exception\InvalidFrameException;
 
 /**
  * ACK帧
- * 
+ *
  * 用于确认收到的数据包
  * 参考：https://tools.ietf.org/html/rfc9000#section-19.3
  */
@@ -28,25 +29,25 @@ final class AckFrame extends Frame
         private readonly ?array $ecnCounts = null
     ) {
         if ($largestAcked < 0) {
-            throw new \InvalidArgumentException('最大确认包序号不能为负数');
+            throw new InvalidFrameException('最大确认包序号不能为负数');
         }
         
         if ($ackDelay < 0) {
-            throw new \InvalidArgumentException('确认延迟不能为负数');
+            throw new InvalidFrameException('确认延迟不能为负数');
         }
 
         if ($ecnCounts !== null && count($ecnCounts) !== 3) {
-            throw new \InvalidArgumentException('ECN计数必须包含3个元素');
+            throw new InvalidFrameException('ECN计数必须包含3个元素');
         }
 
         // 验证确认范围的有效性
         foreach ($ackRanges as $range) {
             if (!is_array($range) || count($range) !== 2) {
-                throw new \InvalidArgumentException('确认范围格式无效');
+                throw new InvalidFrameException('确认范围格式无效');
             }
             [$start, $end] = $range;
             if ($start < 0 || $end < 0 || $start > $end) {
-                throw new \InvalidArgumentException('确认范围值无效');
+                throw new InvalidFrameException('确认范围值无效');
             }
         }
     }
@@ -124,7 +125,7 @@ final class AckFrame extends Frame
     public static function decode(string $data, int $offset = 0): array
     {
         if ($offset >= strlen($data)) {
-            throw new \InvalidArgumentException('数据不足，无法解码ACK帧');
+            throw new InvalidFrameException('数据不足，无法解码ACK帧');
         }
 
         $position = $offset;
@@ -133,7 +134,7 @@ final class AckFrame extends Frame
         $isEcnAck = $frameType === FrameType::ACK_ECN->value;
         
         if ($frameType !== FrameType::ACK->value && $frameType !== FrameType::ACK_ECN->value) {
-            throw new \InvalidArgumentException('无效的ACK帧类型');
+            throw new InvalidFrameException('无效的ACK帧类型');
         }
 
         // 解码最大确认包序号

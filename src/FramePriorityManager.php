@@ -8,7 +8,7 @@ use Tourze\QUIC\Core\Enum\FrameType;
 
 /**
  * 帧优先级管理器
- * 
+ *
  * 负责帧的优先级调度和传输管理
  */
 final class FramePriorityManager
