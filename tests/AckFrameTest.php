@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 namespace Tourze\QUIC\Frames\Tests;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tourze\QUIC\Core\Enum\FrameType;
 use Tourze\QUIC\Frames\AckFrame;
 use Tourze\QUIC\Frames\Exception\InvalidFrameException;
 
-class AckFrameTest extends TestCase
+/**
+ * @internal
+ */
+#[CoversClass(AckFrame::class)]
+final class AckFrameTest extends TestCase
 {
     public function testConstructorWithValidData(): void
     {
         $frame = new AckFrame(100, 50, [[10, 20], [30, 40]], [1, 2, 3]);
-        
+
         $this->assertSame(100, $frame->getLargestAcked());
         $this->assertSame(50, $frame->getAckDelay());
         $this->assertSame([[10, 20], [30, 40]], $frame->getAckRanges());
@@ -25,7 +30,7 @@ class AckFrameTest extends TestCase
     public function testConstructorWithoutEcnCounts(): void
     {
         $frame = new AckFrame(100, 50);
-        
+
         $this->assertSame(100, $frame->getLargestAcked());
         $this->assertSame(50, $frame->getAckDelay());
         $this->assertSame([], $frame->getAckRanges());
@@ -37,7 +42,7 @@ class AckFrameTest extends TestCase
     {
         $this->expectException(InvalidFrameException::class);
         $this->expectExceptionMessage('最大确认包序号不能为负数');
-        
+
         new AckFrame(-1, 50);
     }
 
@@ -45,7 +50,7 @@ class AckFrameTest extends TestCase
     {
         $this->expectException(InvalidFrameException::class);
         $this->expectExceptionMessage('确认延迟不能为负数');
-        
+
         new AckFrame(100, -1);
     }
 
@@ -53,8 +58,8 @@ class AckFrameTest extends TestCase
     {
         $this->expectException(InvalidFrameException::class);
         $this->expectExceptionMessage('ECN计数必须包含3个元素');
-        
-        /** @phpstan-ignore-next-line 故意传入错误的ECN计数来测试验证 */
+
+        /* @phpstan-ignore-next-line 故意传入错误的ECN计数来测试验证 */
         new AckFrame(100, 50, [], [1, 2]);
     }
 
@@ -62,8 +67,8 @@ class AckFrameTest extends TestCase
     {
         $this->expectException(InvalidFrameException::class);
         $this->expectExceptionMessage('确认范围格式无效');
-        
-        /** @phpstan-ignore-next-line 故意传入格式错误的range来测试验证 */
+
+        /* @phpstan-ignore-next-line 故意传入格式错误的range来测试验证 */
         new AckFrame(100, 50, [[10]]);
     }
 
@@ -71,7 +76,7 @@ class AckFrameTest extends TestCase
     {
         $this->expectException(InvalidFrameException::class);
         $this->expectExceptionMessage('确认范围值无效');
-        
+
         new AckFrame(100, 50, [[20, 10]]);
     }
 
@@ -79,7 +84,7 @@ class AckFrameTest extends TestCase
     {
         $frame = new AckFrame(100, 50);
         $encoded = $frame->encode();
-        
+
         $this->assertNotEmpty($encoded);
     }
 
@@ -87,7 +92,7 @@ class AckFrameTest extends TestCase
     {
         $frame = new AckFrame(100, 50, [], [1, 2, 3]);
         $encoded = $frame->encode();
-        
+
         $this->assertNotEmpty($encoded);
     }
 
@@ -95,9 +100,9 @@ class AckFrameTest extends TestCase
     {
         $frame = new AckFrame(100, 50);
         $encoded = $frame->encode();
-        
+
         [$decodedFrame, $consumed] = AckFrame::decode($encoded);
-        
+
         $this->assertInstanceOf(AckFrame::class, $decodedFrame);
         $this->assertSame(100, $decodedFrame->getLargestAcked());
         $this->assertSame(50, $decodedFrame->getAckDelay());
@@ -108,7 +113,7 @@ class AckFrameTest extends TestCase
     {
         $this->expectException(InvalidFrameException::class);
         $this->expectExceptionMessage('数据不足，无法解码ACK帧');
-        
+
         AckFrame::decode('', 10);
     }
 
@@ -116,8 +121,17 @@ class AckFrameTest extends TestCase
     {
         $this->expectException(InvalidFrameException::class);
         $this->expectExceptionMessage('无效的ACK帧类型');
-        
+
         $data = chr(0xFF); // 无效的帧类型
         AckFrame::decode($data);
+    }
+
+    public function testValidate(): void
+    {
+        $frame = new AckFrame(100, 50);
+        $this->assertTrue($frame->validate());
+
+        $frameWithEcn = new AckFrame(100, 50, [[10, 20]], [1, 2, 3]);
+        $this->assertTrue($frameWithEcn->validate());
     }
 }

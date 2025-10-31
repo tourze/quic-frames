@@ -27,7 +27,7 @@ final class PingFrame extends Frame
 
     public static function decode(string $data, int $offset = 0): array
     {
-        if ($offset >= strlen($data) || ord($data[$offset]) !== 0x01) {
+        if ($offset >= strlen($data) || 0x01 !== ord($data[$offset])) {
             throw new InvalidFrameException('无效的PING帧格式');
         }
 
@@ -43,4 +43,4 @@ final class PingFrame extends Frame
     {
         return 50; // 中等优先级
     }
-} 
+}

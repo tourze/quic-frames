@@ -19,12 +19,12 @@ final class ConnectionCloseFrame extends Frame
     public function __construct(
         private readonly int $errorCode,
         private readonly int $frameType = 0,
-        private readonly string $reasonPhrase = ''
+        private readonly string $reasonPhrase = '',
     ) {
         if ($errorCode < 0) {
             throw new InvalidFrameException('错误码不能为负数');
         }
-        
+
         if ($frameType < 0) {
             throw new InvalidFrameException('帧类型不能为负数');
         }
@@ -57,7 +57,7 @@ final class ConnectionCloseFrame extends Frame
         $result .= VariableInteger::encode($this->frameType);
         $result .= VariableInteger::encode(strlen($this->reasonPhrase));
         $result .= $this->reasonPhrase;
-        
+
         return $result;
     }
 
@@ -69,7 +69,7 @@ final class ConnectionCloseFrame extends Frame
 
         $position = $offset;
         $frameType = ord($data[$position++]);
-        
+
         if ($frameType !== FrameType::CONNECTION_CLOSE->value) {
             throw new InvalidFrameException('无效的CONNECTION_CLOSE帧类型');
         }
@@ -99,7 +99,7 @@ final class ConnectionCloseFrame extends Frame
         }
 
         $totalConsumed = $position - $offset;
-        
+
         return [new self($errorCode, $triggerFrameType, $reasonPhrase), $totalConsumed];
     }
 
@@ -107,4 +107,4 @@ final class ConnectionCloseFrame extends Frame
     {
         return $this->errorCode >= 0 && $this->frameType >= 0;
     }
-} 
+}

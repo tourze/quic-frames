@@ -38,8 +38,9 @@ final class FrameDecoder
     /**
      * 解码单个帧
      *
-     * @param string $data 二进制数据
-     * @param int $offset 解码起始偏移量
+     * @param string $data   二进制数据
+     * @param int    $offset 解码起始偏移量
+     *
      * @return array{0: Frame, 1: int} [解码的帧对象, 消耗的字节数]
      */
     public function decodeFrame(string $data, int $offset = 0): array
@@ -49,18 +50,18 @@ final class FrameDecoder
         }
 
         $frameTypeByte = ord($data[$offset]);
-        
+
         // 尝试解析帧类型
         try {
             $frameType = FrameType::from($frameTypeByte);
         } catch (\ValueError) {
-            throw new InvalidFrameException("未知的帧类型: 0x" . sprintf('%02X', $frameTypeByte));
+            throw new InvalidFrameException('未知的帧类型: 0x' . sprintf('%02X', $frameTypeByte));
         }
 
         // 获取对应的帧类
         $frameClass = self::FRAME_CLASS_MAP[$frameTypeByte] ?? null;
-        
-        if ($frameClass === null) {
+
+        if (null === $frameClass) {
             throw new InvalidFrameException("不支持的帧类型: {$frameType->name}");
         }
 
@@ -72,6 +73,7 @@ final class FrameDecoder
      * 解码多个帧
      *
      * @param string $data 二进制数据
+     *
      * @return Frame[] 解码的帧数组
      */
     public function decodeFrames(string $data): array
@@ -81,46 +83,81 @@ final class FrameDecoder
         $dataLength = strlen($data);
 
         while ($offset < $dataLength) {
-            // 特殊处理 PADDING 帧（连续的 0x00 字节）
-            if (ord($data[$offset]) === 0x00) {
-                $paddingStart = $offset;
-                while ($offset < $dataLength && ord($data[$offset]) === 0x00) {
-                    $offset++;
-                }
-                $paddingLength = $offset - $paddingStart;
-                if ($paddingLength > 0) {
-                    $frames[] = new PaddingFrame($paddingLength);
-                }
-                continue;
+            $result = $this->decodeNextFrame($data, $offset, $dataLength);
+
+            if (null === $result['frame']) {
+                break;
             }
 
-            try {
-                [$frame, $consumed] = $this->decodeFrame($data, $offset);
-                $frames[] = $frame;
-                $offset += $consumed;
-            } catch (\Throwable $e) {
-                throw new InvalidFrameException(
-                    "在偏移量 {$offset} 处解码帧失败: {$e->getMessage()}",
-                    0,
-                    $e
-                );
-            }
+            $frames[] = $result['frame'];
+            $offset = $result['newOffset'];
         }
 
         return $frames;
     }
 
     /**
+     * @return array{frame: Frame|null, newOffset: int}
+     */
+    private function decodeNextFrame(string $data, int $offset, int $dataLength): array
+    {
+        // Handle PADDING frames (consecutive 0x00 bytes)
+        if (0x00 === ord($data[$offset])) {
+            return $this->decodePaddingFrame($data, $offset, $dataLength);
+        }
+
+        return $this->decodeRegularFrame($data, $offset);
+    }
+
+    /**
+     * @return array{frame: Frame|null, newOffset: int}
+     */
+    private function decodePaddingFrame(string $data, int $offset, int $dataLength): array
+    {
+        $paddingStart = $offset;
+
+        while ($offset < $dataLength && 0x00 === ord($data[$offset])) {
+            ++$offset;
+        }
+
+        $paddingLength = $offset - $paddingStart;
+
+        return [
+            'frame' => $paddingLength > 0 ? new PaddingFrame($paddingLength) : null,
+            'newOffset' => $offset,
+        ];
+    }
+
+    /**
+     * @return array{frame: Frame, newOffset: int}
+     */
+    private function decodeRegularFrame(string $data, int $offset): array
+    {
+        try {
+            [$frame, $consumed] = $this->decodeFrame($data, $offset);
+
+            return [
+                'frame' => $frame,
+                'newOffset' => $offset + $consumed,
+            ];
+        } catch (\Throwable $e) {
+            throw new InvalidFrameException("在偏移量 {$offset} 处解码帧失败: {$e->getMessage()}", 0, $e);
+        }
+    }
+
+    /**
      * 检查数据中是否有完整的帧
      *
-     * @param string $data 二进制数据
-     * @param int $offset 检查起始偏移量
+     * @param string $data   二进制数据
+     * @param int    $offset 检查起始偏移量
+     *
      * @return bool 是否有完整的帧
      */
     public function hasCompleteFrame(string $data, int $offset = 0): bool
     {
         try {
             $this->decodeFrame($data, $offset);
+
             return true;
         } catch (\Exception) {
             return false;
@@ -130,8 +167,9 @@ final class FrameDecoder
     /**
      * 获取下一个帧的类型（不解码整个帧）
      *
-     * @param string $data 二进制数据
-     * @param int $offset 偏移量
+     * @param string $data   二进制数据
+     * @param int    $offset 偏移量
+     *
      * @return FrameType 帧类型
      */
     public function peekFrameType(string $data, int $offset = 0): FrameType
@@ -141,11 +179,11 @@ final class FrameDecoder
         }
 
         $frameTypeByte = ord($data[$offset]);
-        
+
         try {
             return FrameType::from($frameTypeByte);
         } catch (\ValueError) {
-            throw new InvalidFrameException("未知的帧类型: 0x" . sprintf('%02X', $frameTypeByte));
+            throw new InvalidFrameException('未知的帧类型: 0x' . sprintf('%02X', $frameTypeByte));
         }
     }
 
@@ -153,6 +191,7 @@ final class FrameDecoder
      * 验证所有解码的帧
      *
      * @param Frame[] $frames 要验证的帧数组
+     *
      * @return bool 所有帧是否有效
      */
     public function validateFrames(array $frames): bool
@@ -161,7 +200,7 @@ final class FrameDecoder
             if (!$frame instanceof Frame) {
                 return false;
             }
-            
+
             if (!$frame->validate()) {
                 return false;
             }
@@ -173,8 +212,9 @@ final class FrameDecoder
     /**
      * 按类型过滤帧
      *
-     * @param Frame[] $frames 帧数组
+     * @param Frame[]   $frames    帧数组
      * @param FrameType $frameType 要过滤的帧类型
+     *
      * @return Frame[] 过滤后的帧数组
      */
     public function filterFramesByType(array $frames, FrameType $frameType): array
@@ -199,6 +239,7 @@ final class FrameDecoder
                 // 忽略无效的帧类型值
             }
         }
+
         return $types;
     }
-} 
+}

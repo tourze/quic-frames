@@ -1,22 +1,80 @@
 # QUIC Frames Package
 
-这是一个用于处理 QUIC 协议帧的 PHP 库，提供了各种 QUIC 帧类型的编解码和管理功能。
+[English](README.md) | [中文](README.zh-CN.md)
 
-## 功能特性
+[![PHP Version](https://img.shields.io/packagist/php-v/tourze/quic-frames.svg?style=flat-square)]
+(https://packagist.org/packages/tourze/quic-frames)
+[![License](https://img.shields.io/packagist/l/tourze/quic-frames.svg?style=flat-square)]
+(https://packagist.org/packages/tourze/quic-frames)
+[![Latest Version](https://img.shields.io/packagist/v/tourze/quic-frames.svg?style=flat-square)]
+(https://packagist.org/packages/tourze/quic-frames)
+[![Total Downloads](https://img.shields.io/packagist/dt/tourze/quic-frames.svg?style=flat-square)]
+(https://packagist.org/packages/tourze/quic-frames)
+[![Code Coverage](https://img.shields.io/codecov/c/github/tourze/quic-frames?style=flat-square)]
+(https://codecov.io/gh/tourze/quic-frames)
+[![Build Status]
+(https://img.shields.io/github/actions/workflow/status/tourze/quic-frames/tests.yml?branch=master&style=flat-square)]
+(https://github.com/tourze/quic-frames/actions)
 
-- 支持标准 QUIC 帧类型（PING、PADDING、STREAM、ACK、CRYPTO、CONNECTION_CLOSE）
-- 帧的编码和解码
-- 优先级管理和调度
-- 帧验证
-- 高性能编解码器
+A PHP library for handling QUIC protocol frames, providing encoding, 
+decoding, and management of various QUIC frame types.
 
-## 安装
+## Table of Contents
+
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Basic Usage](#basic-usage)
+- [Advanced Usage](#advanced-usage)
+- [Dependencies](#dependencies)
+- [Testing](#testing)
+- [Contributing](#contributing)
+- [License](#license)
+
+## Features
+
+- Support for standard QUIC frame types  
+  (PING, PADDING, STREAM, ACK, CRYPTO, CONNECTION_CLOSE)
+- Frame encoding and decoding
+- Priority management and scheduling
+- Frame validation
+- High-performance codec
+
+## Installation
 
 ```bash
 composer require tourze/quic-frames
 ```
 
-## 基本用法
+## Quick Start
+
+```php
+<?php
+
+use Tourze\QUIC\Frames\StreamFrame;
+use Tourze\QUIC\Frames\FrameEncoder;
+use Tourze\QUIC\Frames\FrameDecoder;
+
+// Create a STREAM frame
+$frame = new StreamFrame(4, 'Hello QUIC!', 0, true);
+
+// Encode the frame
+$encoder = new FrameEncoder();
+$binary = $encoder->encodeFrame($frame);
+
+// Decode the frame
+$decoder = new FrameDecoder();
+[$decoded, $consumed] = $decoder->decodeFrame($binary);
+
+// Use priority manager
+use Tourze\QUIC\Frames\FramePriorityManager;
+
+$manager = new FramePriorityManager();
+$manager->addFrame($frame);
+$nextFrames = $manager->getNextFrames(maxCount: 10, maxSize: 1200);
+```
+
+## Basic Usage
 
 ### 创建和编码帧
 
@@ -139,6 +197,68 @@ $close = new ConnectionCloseFrame(
 );
 ```
 
+## Advanced Usage
+
+### Batch Frame Processing
+
+For better performance when handling multiple frames:
+
+```php
+use Tourze\QUIC\Frames\FrameDecoder;
+
+$decoder = new FrameDecoder();
+$frames = $decoder->decodeFrames($binaryData);
+
+foreach ($frames as $frame) {
+    // Process each frame
+    echo "Frame type: " . $frame->getType() . "\n";
+}
+```
+
+### Custom Priority Management
+
+```php
+use Tourze\QUIC\Frames\FramePriorityManager;
+
+$manager = new FramePriorityManager();
+
+// Add urgent frames (highest priority)
+$manager->addUrgentFrame($ackFrame);
+
+// Add frames with different priorities
+$manager->addFrame($streamFrame, priority: 10);
+$manager->addFrame($paddingFrame, priority: 100);
+
+// Get frames respecting priority and size limits
+$nextFrames = $manager->getNextFrames(maxCount: 5, maxSize: 800);
+```
+
+### Frame Validation
+
+All frames support validation to ensure data integrity:
+
+```php
+$frame = new StreamFrame(4, 'data', 0, true);
+
+if ($frame->validate()) {
+    $encoded = $frame->encode();
+} else {
+    throw new InvalidArgumentException('Invalid frame data');
+}
+```
+
+## Dependencies
+
+This package requires:
+
+- **PHP 8.1+** - Uses modern PHP features for better performance
+- **tourze/quic-core** - Core QUIC protocol definitions and utilities
+- **tourze/quic-packets** - QUIC packet handling and structure definitions
+
+For development:
+- **phpunit/phpunit ^10.0** - Unit testing framework
+- **phpstan/phpstan ^2.1** - Static analysis tool
+
 ## 帧优先级
 
 帧具有内置的优先级系统：
@@ -166,19 +286,32 @@ try {
 }
 ```
 
-## 测试
+## Testing
 
-运行测试套件：
+Run the test suite:
 
 ```bash
 ./vendor/bin/phpunit packages/quic-frames/tests/
 ```
 
-## 许可证
+## Contributing
 
-MIT License
+We welcome contributions! Please follow these guidelines:
 
-## 相关包
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/new-feature`
+3. Make your changes and add tests
+4. Ensure all tests pass: `./vendor/bin/phpunit packages/quic-frames/tests/`
+5. Run static analysis: `./vendor/bin/phpstan analyse packages/quic-frames`
+6. Submit a pull request
 
-- `tourze/quic-core` - QUIC 协议核心功能
-- `tourze/quic-packets` - QUIC 数据包处理
+For bug reports and feature requests, please create an issue on GitHub.
+
+## License
+
+The MIT License (MIT). Please see [License File](LICENSE) for more information.
+
+## Related Packages
+
+- `tourze/quic-core` - QUIC protocol core functionality
+- `tourze/quic-packets` - QUIC packet processing

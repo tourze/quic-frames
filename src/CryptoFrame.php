@@ -18,7 +18,7 @@ final class CryptoFrame extends Frame
 {
     public function __construct(
         private readonly int $offset,
-        private readonly string $data
+        private readonly string $data,
     ) {
         if ($offset < 0) {
             throw new InvalidFrameException('偏移量不能为负数');
@@ -51,7 +51,7 @@ final class CryptoFrame extends Frame
         $result .= VariableInteger::encode($this->offset);
         $result .= VariableInteger::encode($this->getLength());
         $result .= $this->data;
-        
+
         return $result;
     }
 
@@ -63,7 +63,7 @@ final class CryptoFrame extends Frame
 
         $position = $offset;
         $frameType = ord($data[$position++]);
-        
+
         if ($frameType !== FrameType::CRYPTO->value) {
             throw new InvalidFrameException('无效的CRYPTO帧类型');
         }
@@ -86,7 +86,7 @@ final class CryptoFrame extends Frame
         $position += $length;
 
         $totalConsumed = $position - $offset;
-        
+
         return [new self($cryptoOffset, $cryptoData), $totalConsumed];
     }
 
@@ -94,4 +94,4 @@ final class CryptoFrame extends Frame
     {
         return $this->offset >= 0;
     }
-} 
+}

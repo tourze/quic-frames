@@ -16,7 +16,7 @@ use Tourze\QUIC\Frames\Exception\InvalidFrameException;
 final class PaddingFrame extends Frame
 {
     public function __construct(
-        private readonly int $length = 1
+        private readonly int $length = 1,
     ) {
         if ($length < 1) {
             throw new InvalidFrameException('PADDING帧长度必须至少为1字节');
@@ -46,14 +46,14 @@ final class PaddingFrame extends Frame
 
         $length = 0;
         $position = $offset;
-        
+
         // 计算连续的PADDING帧长度
-        while ($position < strlen($data) && ord($data[$position]) === 0x00) {
-            $length++;
-            $position++;
+        while ($position < strlen($data) && 0x00 === ord($data[$position])) {
+            ++$length;
+            ++$position;
         }
 
-        if ($length === 0) {
+        if (0 === $length) {
             throw new InvalidFrameException('无效的PADDING帧格式');
         }
 
@@ -69,4 +69,4 @@ final class PaddingFrame extends Frame
     {
         return 100; // 最低优先级
     }
-} 
+}

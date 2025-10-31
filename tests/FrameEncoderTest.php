@@ -4,19 +4,26 @@ declare(strict_types=1);
 
 namespace Tourze\QUIC\Frames\Tests;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use Tourze\QUIC\Frames\Exception\InvalidFrameException;
 use Tourze\QUIC\Frames\FrameEncoder;
 use Tourze\QUIC\Frames\PaddingFrame;
 use Tourze\QUIC\Frames\PingFrame;
 use Tourze\QUIC\Frames\StreamFrame;
-use Tourze\QUIC\Frames\Exception\InvalidFrameException;
 
+/**
+ * @internal
+ */
+#[CoversClass(FrameEncoder::class)]
 final class FrameEncoderTest extends TestCase
 {
     private FrameEncoder $encoder;
 
     protected function setUp(): void
     {
+        parent::setUp();
+
         $this->encoder = new FrameEncoder();
     }
 
@@ -24,7 +31,7 @@ final class FrameEncoderTest extends TestCase
     {
         $frame = new PingFrame();
         $encoded = $this->encoder->encodeFrame($frame);
-        
+
         $this->assertSame("\x01", $encoded);
     }
 
@@ -34,10 +41,10 @@ final class FrameEncoderTest extends TestCase
             new PingFrame(),
             new PaddingFrame(2),
         ];
-        
+
         $encoded = $this->encoder->encodeFrames($frames);
         $expected = "\x01\x00\x00";
-        
+
         $this->assertSame($expected, $encoded);
     }
 
@@ -45,8 +52,8 @@ final class FrameEncoderTest extends TestCase
     {
         $this->expectException(InvalidFrameException::class);
         $this->expectExceptionMessage('只能编码Frame实例');
-        
-        /** @phpstan-ignore-next-line 故意传入错误类型来测试类型检查 */
+
+        /* @phpstan-ignore-next-line 故意传入错误类型来测试类型检查 */
         $this->encoder->encodeFrames(['not a frame']);
     }
 
@@ -57,9 +64,9 @@ final class FrameEncoderTest extends TestCase
             new PingFrame(),     // 中优先级 (50)
             new StreamFrame(0, 'test'), // 高优先级 (20)
         ];
-        
+
         $encoded = $this->encoder->encodeFramesByPriority($frames);
-        
+
         // 验证流帧排在最前面 (STREAM_LEN类型，因为总是包含长度字段)
         $this->assertSame(0x0A, ord($encoded[0])); // STREAM_LEN帧类型
     }
@@ -68,9 +75,9 @@ final class FrameEncoderTest extends TestCase
     {
         $frames = [new PingFrame()]; // 1字节
         $targetSize = 5;
-        
+
         $encoded = $this->encoder->encodeFramesWithPadding($frames, $targetSize);
-        
+
         $this->assertSame($targetSize, strlen($encoded));
         $this->assertSame("\x01", substr($encoded, 0, 1)); // PING帧
         $this->assertStringEndsWith("\x00\x00\x00\x00", $encoded); // 填充
@@ -80,10 +87,10 @@ final class FrameEncoderTest extends TestCase
     {
         $frames = [new StreamFrame(0, 'long data that exceeds target')];
         $targetSize = 5;
-        
+
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessageMatches('/编码数据大小.*超过目标大小/');
-        
+
         $this->encoder->encodeFramesWithPadding($frames, $targetSize);
     }
 
@@ -91,7 +98,7 @@ final class FrameEncoderTest extends TestCase
     {
         $frame = new PingFrame();
         $size = $this->encoder->getEncodedSize($frame);
-        
+
         $this->assertSame(1, $size);
     }
 
@@ -101,7 +108,7 @@ final class FrameEncoderTest extends TestCase
             new PingFrame(),      // 1字节
             new PaddingFrame(3),  // 3字节
         ];
-        
+
         $totalSize = $this->encoder->getTotalEncodedSize($frames);
         $this->assertSame(4, $totalSize);
     }
@@ -112,9 +119,9 @@ final class FrameEncoderTest extends TestCase
             new PingFrame(),      // 1字节
             new PaddingFrame(3),  // 3字节
         ];
-        
+
         $this->assertTrue($this->encoder->canFitInPacket($frames, 10));
         $this->assertTrue($this->encoder->canFitInPacket($frames, 4));
         $this->assertFalse($this->encoder->canFitInPacket($frames, 3));
     }
-} 
+}

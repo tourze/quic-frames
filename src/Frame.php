@@ -27,8 +27,9 @@ abstract class Frame
     /**
      * 从二进制数据解码帧
      *
-     * @param string $data 二进制数据
-     * @param int $offset 解码起始偏移量
+     * @param string $data   二进制数据
+     * @param int    $offset 解码起始偏移量
+     *
      * @return array{0: Frame, 1: int} [解码的帧对象, 消耗的字节数]
      */
     abstract public static function decode(string $data, int $offset = 0): array;
@@ -64,6 +65,6 @@ abstract class Frame
             FrameType::CONNECTION_CLOSE_APP,
             FrameType::ACK,
             FrameType::ACK_ECN,
-        ]);
+        ], true);
     }
-} 
+}

@@ -21,21 +21,21 @@ final class StreamFrame extends Frame
         private readonly string $data,
         private readonly int $offset = 0,
         private readonly bool $fin = false,
-        private readonly ?int $length = null
+        private readonly ?int $length = null,
     ) {
         if ($streamId < 0) {
             throw new InvalidFrameException('流ID不能为负数');
         }
-        
+
         if ($offset < 0) {
             throw new InvalidFrameException('偏移量不能为负数');
         }
 
-        if ($length !== null && $length < 0) {
+        if (null !== $length && $length < 0) {
             throw new InvalidFrameException('长度不能为负数');
         }
 
-        if ($length !== null && $length !== strlen($data)) {
+        if (null !== $length && $length !== strlen($data)) {
             throw new InvalidFrameException('指定长度与数据长度不匹配');
         }
     }
@@ -44,14 +44,14 @@ final class StreamFrame extends Frame
     {
         // 根据标志位确定具体的流帧类型
         $type = 0x08;
-        
+
         if ($this->offset > 0) {
             $type |= 0x04; // OFF位
         }
-        
+
         // 在多帧编码的情况下，总是包含长度字段
         $type |= 0x02; // LEN位
-        
+
         if ($this->fin) {
             $type |= 0x01; // FIN位
         }
@@ -88,17 +88,17 @@ final class StreamFrame extends Frame
     {
         $result = chr($this->getType()->value);
         $result .= VariableInteger::encode($this->streamId);
-        
+
         if ($this->offset > 0) {
             $result .= VariableInteger::encode($this->offset);
         }
-        
+
         // 总是包含长度字段
         $dataLength = $this->length ?? strlen($this->data);
         $result .= VariableInteger::encode($dataLength);
-        
+
         $result .= $this->data;
-        
+
         return $result;
     }
 
@@ -110,7 +110,7 @@ final class StreamFrame extends Frame
 
         $position = $offset;
         $frameType = ord($data[$position++]);
-        
+
         if (($frameType & 0xF8) !== 0x08) {
             throw new InvalidFrameException('无效的STREAM帧类型');
         }
@@ -133,15 +133,15 @@ final class StreamFrame extends Frame
         // 解码长度和数据
         $streamData = '';
         $dataLength = null;
-        
+
         if ($hasLength) {
             [$dataLength, $consumed] = VariableInteger::decode($data, $position);
             $position += $consumed;
-            
+
             if ($position + $dataLength > strlen($data)) {
                 throw new InvalidFrameException('数据不足，无法读取完整的流数据');
             }
-            
+
             $streamData = substr($data, $position, $dataLength);
             $position += $dataLength;
         } else {
@@ -151,10 +151,10 @@ final class StreamFrame extends Frame
         }
 
         $totalConsumed = $position - $offset;
-        
+
         return [
             new self($streamId, $streamData, $streamOffset, $hasFin, $dataLength),
-            $totalConsumed
+            $totalConsumed,
         ];
     }
 
@@ -168,7 +168,7 @@ final class StreamFrame extends Frame
             return false;
         }
 
-        if ($this->length !== null) {
+        if (null !== $this->length) {
             if ($this->length < 0 || $this->length !== strlen($this->data)) {
                 return false;
             }
@@ -181,4 +181,4 @@ final class StreamFrame extends Frame
     {
         return 20; // 较高优先级，仅次于控制帧
     }
-} 
+}

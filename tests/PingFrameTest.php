@@ -4,10 +4,15 @@ declare(strict_types=1);
 
 namespace Tourze\QUIC\Frames\Tests;
 
+use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use Tourze\QUIC\Core\Enum\FrameType;
 use Tourze\QUIC\Frames\PingFrame;
 
+/**
+ * @internal
+ */
+#[CoversClass(PingFrame::class)]
 final class PingFrameTest extends TestCase
 {
     public function testGetType(): void
@@ -20,7 +25,7 @@ final class PingFrameTest extends TestCase
     {
         $frame = new PingFrame();
         $encoded = $frame->encode();
-        
+
         $this->assertSame("\x01", $encoded);
         $this->assertSame(1, strlen($encoded));
     }
@@ -29,7 +34,7 @@ final class PingFrameTest extends TestCase
     {
         $data = "\x01";
         [$frame, $consumed] = PingFrame::decode($data);
-        
+
         $this->assertInstanceOf(PingFrame::class, $frame);
         $this->assertSame(FrameType::PING, $frame->getType());
         $this->assertSame(1, $consumed);
@@ -39,7 +44,7 @@ final class PingFrameTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('无效的PING帧格式');
-        
+
         PingFrame::decode("\x02");
     }
 
@@ -47,8 +52,8 @@ final class PingFrameTest extends TestCase
     {
         $this->expectException(\InvalidArgumentException::class);
         $this->expectExceptionMessage('无效的PING帧格式');
-        
-        PingFrame::decode("", 0);
+
+        PingFrame::decode('', 0);
     }
 
     public function testValidate(): void
@@ -68,4 +73,4 @@ final class PingFrameTest extends TestCase
         $frame = new PingFrame();
         $this->assertFalse($frame->requiresImmediateTransmission());
     }
-} 
+}
